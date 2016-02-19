@@ -1,25 +1,64 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
+title: "Activity Data"
+date: "February 19, 2016"
+output: html_document
 ---
 
 
-## Loading and preprocessing the data
+###Load packages and read in the data.
+```{r}
+library(lattice)
+library(dplyr)
+act <- read.csv("activity.csv")
+act$date <-as.Date(act$date, "%Y-%m-%d")
+```
 
+###Calculate total number of steps per day.
+```{r}
+acts <- tapply(act$steps, act$date, sum, na.rm = TRUE)
+acts <- acts[acts>0]
+hist(acts, col = "red", main = "Steps Per Day", xlab = "Steps")
+paste("The mean is", mean(acts))
+paste("The median is", median(acts))
+```
 
+###Average daily activity pattern.
+```{r}
+acts <- tapply(act$steps, act$interval, mean, na.rm = TRUE)
+plot(names(acts), acts, type = 'l', lwd = 2, col = "red", xlab = "Interval", ylab = "Average Number of Steps", main = "Average Daily Activity")
+paste("The maximum average daily activity occurs during interval", names(which.max(acts)))
+```
 
-## What is mean total number of steps taken per day?
+###Impute missing values.
+(imputed using average value per day for the interval)
+```{r}
+paste("The number of missing values is", sum(is.na(act$steps)))
+act2 <- act
+for(i in 1:17568){
+  if(is.na(act2[i, 1])){
+    act2[i, 1] <- acts[as.character(act2[[i,3]])]
+  }
+}
+acts2 <- tapply(act2$steps, act2$date, sum)
+hist(acts2, col = "red", main = "Steps Per Day (Imputed)", xlab = "Steps")
+paste("The imputed mean is", mean(acts2))
+paste("The imputed median is", median(acts2))
+```
+The mean has not changed, and the median has only increased by a little more than one step per day.  The shape of the histogram is the same, though the middle peak is now taller.
 
-
-
-## What is the average daily activity pattern?
-
-
-
-## Imputing missing values
-
-
-
-## Are there differences in activity patterns between weekdays and weekends?
+###Weekdays vs Weekends
+```{r}
+act2$day <- weekdays(act2$date)
+for(i in 1:17568){
+  if(act2[[i,4]] == "Saturday" | act2[[i,4]] == "Sunday"){
+    act2[i, 4] <- "weekend"
+  }
+  else{
+    act2[i, 4] <- "weekday"
+  }
+}
+act3 <- group_by(act2, interval, day)
+act4 <- summarize_each(act3, funs(mean), steps)
+act4 <- transform(act4, day = factor(day))
+xyplot(steps~interval | day, data = act4, layout = c(1,2), type = "l", xlab = "Interval", ylab = "Average Number of Steps", main = "Average Daily Activity")
+```

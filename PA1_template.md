@@ -18,6 +18,7 @@ act$date <-as.Date(act$date, "%Y-%m-%d")
 
 ```r
 acts <- tapply(act$steps, act$date, sum, na.rm = TRUE)
+acts <- acts[acts>0]
 hist(acts, col = "red", main = "Steps Per Day", xlab = "Steps")
 ```
 
@@ -28,7 +29,7 @@ paste("The mean is", mean(acts))
 ```
 
 ```
-## [1] "The mean is 9354.22950819672"
+## [1] "The mean is 10766.1886792453"
 ```
 
 ```r
@@ -36,7 +37,7 @@ paste("The median is", median(acts))
 ```
 
 ```
-## [1] "The median is 10395"
+## [1] "The median is 10765"
 ```
 
 ###Average daily activity pattern.
@@ -95,7 +96,7 @@ paste("The imputed median is", median(acts2))
 ```
 ## [1] "The imputed median is 10766.1886792453"
 ```
-The mean has increased by 15%, and the median by 3.5%.
+The mean has not changed, and the median has only increased by a little more than one step per day.  The shape of the histogram is the same, though the middle peak is now taller.
 
 ###Weekdays vs Weekends
 
